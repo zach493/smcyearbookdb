@@ -53,7 +53,7 @@ app.get('/login', async (req, res) => {
 });
 
 // Route to fetch alumni details by alum_id_num (using query params like in the login)
-app.get('/alumni', async (req, res) => {
+app.get('/alumniprof', async (req, res) => {
   const alumId = req.query.idNumber; // Extract 'idNumber' from query params
 
   if (!alumId) {
