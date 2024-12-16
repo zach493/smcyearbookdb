@@ -89,7 +89,6 @@ app.get('/alumni', async (req, res) => {
   }
 });
 
-// Route to fetch image by alum_id_num (using query params like in the login)
 app.get('/images', async (req, res) => {
   const alumId = req.query.idNumber; // Extract 'idNumber' from query params
 
@@ -99,7 +98,7 @@ app.get('/images', async (req, res) => {
 
   try {
     // Query to get the image data by img_ID (which should match alum_id_num)
-    const [imageRow] = await db.query('SELECT img_data FROM images WHERE img_ID = ?', [alumId]);
+    const [imageRow] = await db.promise().query('SELECT img_data FROM images WHERE img_ID = ?', [alumId]);
 
     if (!imageRow) {
       return res.status(404).json({ message: 'Image not found' });
@@ -113,6 +112,7 @@ app.get('/images', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 
 
