@@ -63,6 +63,50 @@ app.get('/login', (req, res) => {
 
 
 
+// Express.js Example
+app.get('/images/:alumId', async (req, res) => {
+  const alumId = req.params.alumId;
+
+  try {
+    const [imageRow] = await db.query('SELECT img_data FROM images WHERE img_ID = ?', [alumId]);
+
+    if (!imageRow) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+
+    // Convert binary data to Base64
+    const base64Image = imageRow.img_data.toString('base64');
+    res.json({ img_base64: `data:image/jpeg;base64,${base64Image}` });
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+// Express.js route for fetching alumni details by alum_id_num
+app.get('/alumni/:alumId', async (req, res) => {
+  const alumId = req.params.alumId;
+
+  try {
+    // Query to get alumni information by alum_id_num
+    const [alumRow] = await db.query(
+      'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, alum_motto FROM alumni WHERE alum_id_num = ?',
+      [alumId]
+    );
+
+    // Check if alumni data was found
+    if (!alumRow) {
+      return res.status(404).json({ message: 'Alumni not found' });
+    }
+
+    // Send alumni data as JSON response
+    res.json(alumRow);
+  } catch (error) {
+    console.error('Error fetching alumni details:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 
