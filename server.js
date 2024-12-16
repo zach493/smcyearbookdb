@@ -21,21 +21,23 @@ const db = mysql.createPool({
 
 
 
-// Route to fetch Vision and Mission
-app.get('/api/vision-mission', (req, res) => {
-  const query = 'SELECT mission, vision FROM missionvision LIMIT 1'; // Assuming only one row in the table
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching data:', err);
-      res.status(500).json({ message: 'Failed to fetch data' });
-      return;
+app.get('/api/vision-mission', async (req, res) => {
+  try {
+    const [results] = await db.execute('SELECT mission, vision FROM missionvision LIMIT 1');
+    if (results.length === 0) {
+      res.status(404).json({ message: 'Vision and Mission data not found.' });
+    } else {
+      res.status(200).json({
+        mission: results[0].mission,
+        vision: results[0].vision
+      });
     }
-    res.status(200).json({
-      mission: results[0].mission,
-      vision: results[0].vision
-    });
-  });
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    res.status(500).json({ message: 'Failed to fetch data' });
+  }
 });
+
 
 
 // Fetch alumni data
