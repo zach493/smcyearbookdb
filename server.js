@@ -23,50 +23,16 @@ const db = mysql.createPool({
 
 app.get('/api/vision-mission', async (req, res) => {
   try {
-    const [results] = await db.execute('SELECT mission, vision, ignacia FROM missionvision LIMIT 1');
+    const [results] = await db.execute('SELECT mission, vision, ignacia, almamater, schoolhymn,stmichael FROM missionvision LIMIT 1');
     if (results.length === 0) {
       res.status(404).json({ message: 'Data not found.' });
     } else {
       res.status(200).json({
         mission: results[0].mission,
         vision: results[0].vision,
-        ignacia: results[0].ignacia
-      });
-    }
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    res.status(500).json({ message: 'Failed to fetch data' });
-  }
-});
-
-
-// Route to fetch Alma Mater and School Hymn
-app.get('/api/almamater', async (req, res) => {
-  try {
-    const [results] = await db.execute('SELECT almamater, schoolhymn FROM missionvision LIMIT 1');
-    if (results.length === 0) {
-      res.status(404).json({ message: 'Alma Mater and School Hymn data not found.' });
-    } else {
-      res.status(200).json({
+        ignacia: results[0].ignacia,
         almamater: results[0].almamater,
-        schoolhymn: results[0].schoolhymn // Assuming "schoolhymn" is used for the School Hymn
-      });
-    }
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    res.status(500).json({ message: 'Failed to fetch data' });
-  }
-});
-
-
-// Route to fetch St. Michael's data
-app.get('/api/stm', async (req, res) => {
-  try {
-    const [results] = await db.execute('SELECT stmichael FROM missionvision LIMIT 1');
-    if (results.length === 0) {
-      res.status(404).json({ message: 'Data not found.' });
-    } else {
-      res.status(200).json({
+        schoolhymn: results[0].schoolhymn ,
         stmichael: results[0].stmichael
       });
     }
@@ -75,6 +41,7 @@ app.get('/api/stm', async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch data' });
   }
 });
+
 
 // Fetch alumni data
 app.get('/alumni', async (req, res) => {
