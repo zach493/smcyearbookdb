@@ -39,10 +39,6 @@ app.get('/alumni', (req, res) => {
   });
 });
 
-// Include body-parser middleware
-const bodyParser = require('body-parser');
-app.use(bodyParser.json()); // Parse incoming JSON data
-
 app.post('/login', (req, res) => {
   const { idNumber } = req.body;  // Expecting ID Number from request body
   
