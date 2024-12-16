@@ -39,29 +39,32 @@ app.get('/alumni', (req, res) => {
   });
 });
 
-app.post('/login', (req, res) => {
-    const { idNumber } = req.body;
-  
-    if (!idNumber ) {
-      return res.status(400).json({ message: 'ID Number is required' });
+app.get('/login', (req, res) => {
+  const { idNumber } = req.query;
+
+  // Check if the ID Number is provided
+  if (!idNumber) {
+    return res.status(400).json({ message: 'ID Number is required' });
+  }
+
+  // Query to find the user by ID number
+  const query = 'SELECT * FROM alumni WHERE alum_id_num = ?';
+  db.query(query, [idNumber], (err, results) => {
+    if (err) {
+      console.error('Error fetching user:', err);
+      return res.status(500).json({ message: 'Server error' });
     }
-  
-    // Query to find the user by ID number and password
-    const query = 'SELECT * FROM alumni WHERE alum_id_num = ?';
-    db.query(query, [idNumber], (err, results) => {
-      if (err) {
-        console.error('Error fetching user:', err);
-        return res.status(500).json({ message: 'Server error' });
-      }
-  
-      if (results.length === 0) {
-        return res.status(400).json({ message: 'Invalid ID or password' });
-      }
-  
-      // Send success response with user data or token (e.g., authentication token)
-      res.status(200).json({ message: 'Login successful', user: results[0] });
-    });
+
+    // If no matching user is found, return an error
+    if (results.length === 0) {
+      return res.status(400).json({ message: 'Invalid ID Number' });
+    }
+
+    // Return success with user data or other relevant information
+    res.status(200).json({ message: 'Login successful', user: results[0] });
   });
+});
+
 
 
 
