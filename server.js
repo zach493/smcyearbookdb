@@ -19,16 +19,17 @@ const db = mysql.createPool({
 });
 
 // Fetch alumni data
-app.get('/alumni', (req, res) => {
-  db.query('SELECT * FROM alumni', (err, results) => {
-    if (err) {
-      console.error('Error fetching data:', err);
-      return res.status(500).send('Server error');
-    }
+app.get('/alumni', async (req, res) => {
+  try {
+    const [results] = await db.query('SELECT * FROM alumni');
     res.status(200).json(results);
-  });
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    return res.status(500).send('Server error');
+  }
 });
 
+// Login route to authenticate user
 app.get('/login', async (req, res) => {
   const idNumber = req.query.idNumber; // Extract 'idNumber' from query params
 
