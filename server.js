@@ -58,6 +58,22 @@ app.get('/api/almamater', async (req, res) => {
 });
 
 
+// Route to fetch St. Michael's data
+app.get('/api/stm', async (req, res) => {
+  try {
+    const [results] = await db.execute('SELECT stmichael FROM missionvision LIMIT 1');
+    if (results.length === 0) {
+      res.status(404).json({ message: 'Data not found.' });
+    } else {
+      res.status(200).json({
+        stmichael: results[0].stmichael
+      });
+    }
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    res.status(500).json({ message: 'Failed to fetch data' });
+  }
+});
 
 // Fetch alumni data
 app.get('/alumni', async (req, res) => {
