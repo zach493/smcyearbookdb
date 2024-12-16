@@ -18,6 +18,26 @@ const db = mysql.createPool({
   port: 3306,
 });
 
+
+
+
+// Route to fetch Vision and Mission
+app.get('/api/vision-mission', (req, res) => {
+  const query = 'SELECT mission, vision FROM missionvision LIMIT 1'; // Assuming only one row in the table
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching data:', err);
+      res.status(500).json({ message: 'Failed to fetch data' });
+      return;
+    }
+    res.status(200).json({
+      mission: results[0].mission,
+      vision: results[0].vision
+    });
+  });
+});
+
+
 // Fetch alumni data
 app.get('/alumni', async (req, res) => {
   try {
