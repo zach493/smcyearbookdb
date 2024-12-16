@@ -39,14 +39,13 @@ app.get('/alumni', (req, res) => {
   });
 });
 
-app.post('/login', (req, res) => {
-  const { idNumber } = req.body;  // Expecting ID Number from request body
-  
+app.get('/login', (req, res) => {
+  const idNumber = req.query.idNumber; // Extract 'idNumber' from query params
+
   if (!idNumber) {
     return res.status(400).json({ message: 'ID Number is required' });
   }
 
-  // Query to find the user by ID number (alum_id_num)
   const query = 'SELECT * FROM alumni WHERE alum_id_num = ?';
   db.query(query, [idNumber], (err, results) => {
     if (err) {
@@ -61,6 +60,7 @@ app.post('/login', (req, res) => {
     res.status(200).json({ message: 'Login successful', user: results[0] });
   });
 });
+
 
 
 
