@@ -39,15 +39,18 @@ app.get('/alumni', (req, res) => {
   });
 });
 
-app.get('/login', (req, res) => {
-  const { idNumber } = req.query;
+// Include body-parser middleware
+const bodyParser = require('body-parser');
+app.use(bodyParser.json()); // Parse incoming JSON data
 
-  // Check if the ID Number is provided
+app.post('/login', (req, res) => {
+  const { idNumber } = req.body;  // Expecting ID Number from request body
+  
   if (!idNumber) {
     return res.status(400).json({ message: 'ID Number is required' });
   }
 
-  // Query to find the user by ID number
+  // Query to find the user by ID number (alum_id_num)
   const query = 'SELECT * FROM alumni WHERE alum_id_num = ?';
   db.query(query, [idNumber], (err, results) => {
     if (err) {
@@ -55,12 +58,10 @@ app.get('/login', (req, res) => {
       return res.status(500).json({ message: 'Server error' });
     }
 
-    // If no matching user is found, return an error
     if (results.length === 0) {
       return res.status(400).json({ message: 'Invalid ID Number' });
     }
 
-    // Return success with user data or other relevant information
     res.status(200).json({ message: 'Login successful', user: results[0] });
   });
 });
