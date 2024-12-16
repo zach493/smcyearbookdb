@@ -23,13 +23,14 @@ const db = mysql.createPool({
 
 app.get('/api/vision-mission', async (req, res) => {
   try {
-    const [results] = await db.execute('SELECT mission, vision FROM missionvision LIMIT 1');
+    const [results] = await db.execute('SELECT mission, vision, ignacia FROM missionvision LIMIT 1');
     if (results.length === 0) {
-      res.status(404).json({ message: 'Vision and Mission data not found.' });
+      res.status(404).json({ message: 'Data not found.' });
     } else {
       res.status(200).json({
         mission: results[0].mission,
-        vision: results[0].vision
+        vision: results[0].vision,
+        ignacia: results[0].ignacia
       });
     }
   } catch (err) {
