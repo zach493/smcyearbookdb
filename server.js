@@ -39,6 +39,25 @@ app.get('/api/vision-mission', async (req, res) => {
 });
 
 
+// Route to fetch Alma Mater and School Hymn
+app.get('/api/almamater', async (req, res) => {
+  try {
+    const [results] = await db.execute('SELECT almamater, schoolhymn FROM missionvision LIMIT 1');
+    if (results.length === 0) {
+      res.status(404).json({ message: 'Alma Mater and School Hymn data not found.' });
+    } else {
+      res.status(200).json({
+        almamater: results[0].almamater,
+        schoolhymn: results[0].schoolhymn // Assuming "schoolhymn" is used for the School Hymn
+      });
+    }
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    res.status(500).json({ message: 'Failed to fetch data' });
+  }
+});
+
+
 
 // Fetch alumni data
 app.get('/alumni', async (req, res) => {
