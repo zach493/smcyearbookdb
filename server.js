@@ -172,6 +172,22 @@ app.get('/api/alumnicollege', async (req, res) => {
 });
 
 
+// Endpoint to fetch data for the top administration and other sections
+app.get('/api/smcadmins', async (req, res) => {
+  try {
+    const [results] = await db.query('SELECT name, position, department, image FROM smcadmins');
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'No faculty data found.' });
+    }
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error fetching faculty data:', error);
+    res.status(500).json({ message: 'Failed to fetch faculty data' });
+  }
+});
+
+
+
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
   next();
