@@ -104,53 +104,56 @@ app.get('/images', async (req, res) => {
   }
 });
 
-app.get('/api/yearbook', async (req, res) => {
-  try {
-    const [results] = await db.query('SELECT year, theme, img_data FROM year');
-    if (results.length === 0) {
-      return res.status(404).json({ message: 'No yearbook data found.' });
-    }const yearbookData = results.map((row) => ({
-      year: row.year,
-      theme: row.theme,
-      image: row.img_data ? `data:image/jpeg;base64,${row.img_data.toString('base64')}` : null,
-    }));
-
-    res.status(200).json(yearbookData);
-  } catch (error) {
-    console.error('Error fetching yearbook data:', error);
-    res.status(500).json({ message: 'Failed to fetch yearbook data' });
-  }
-});
 app.get('/api/alumnicollege', async (req, res) => {
-  const { course, year } = req.query; 
+  const { course, year } = req.query;
 
   if (!course || !year) {
     return res.status(400).json({ message: 'Both course and year are required' });
-  }try {
+  }
+
+  try {
+    // Updated query to join alumni table with images table
     const query = `
-      SELECT alum_fname, alum_mname, alum_lname, motto, img_data 
-      FROM alumni 
-      WHERE alum_course = ? AND alum_year = ?
+      SELECT 
+        a.alum_fname, 
+        a.alum_mname, 
+        a.alum_lname, 
+        a.motto, 
+        i.img_data
+      FROM 
+        alumni AS a
+      LEFT JOIN 
+        images AS i 
+      ON 
+        a.alum_id_num = i.img_id
+      WHERE 
+        a.alum_course = ? AND a.alum_year = ?
     `;
+
     const [results] = await db.query(query, [course, year]);
+
     if (results.length === 0) {
       return res.status(404).json({ message: 'No alumni found for the given filters.' });
-    }const alumniData = results.map((row) => ({
+    }
+
+    // Process the results to include base64-encoded image data
+    const alumniData = results.map((row) => ({
       alum_fname: row.alum_fname,
       alum_mname: row.alum_mname,
       alum_lname: row.alum_lname,
       motto: row.motto,
       img_data: row.img_data
-        ? `data:image/jpeg;base64,${row.img_data.toString('base64')}`
+        ? `data:image/jpeg;base64,${Buffer.from(row.img_data).toString('base64')}`
         : null,
     }));
 
     res.status(200).json(alumniData);
   } catch (error) {
-    console.error('Error fetching filtered alumni data:', error);
+    console.error('Error fetching alumni data with images:', error.message);
     res.status(500).json({ message: 'Server error occurred while fetching alumni data.' });
   }
 });
+
 
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
