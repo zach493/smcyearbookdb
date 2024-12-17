@@ -153,6 +153,47 @@ app.get('/api/yearbook', async (req, res) => {
 });
 
 
+
+// New Route: Fetch filtered alumni details by collegeName and year
+app.get('/api/alumnicollege', async (req, res) => {
+  const { course, year } = req.query; // Extract query parameters
+
+  if (!course || !year) {
+    return res.status(400).json({ message: 'Both course and year are required' });
+  }
+
+  try {
+    // Query to fetch alumni details filtered by course and year
+    const query = `
+      SELECT alum_fname, alum_mname, alum_lname, motto, img_data 
+      FROM alumni 
+      WHERE alum_course = ? AND alum_year = ?
+    `;
+    const [results] = await db.query(query, [course, year]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'No alumni found for the given filters.' });
+    }
+
+    // Convert binary image data to Base64 format
+    const alumniData = results.map((row) => ({
+      alum_fname: row.alum_fname,
+      alum_mname: row.alum_mname,
+      alum_lname: row.alum_lname,
+      motto: row.motto,
+      img_data: row.img_data
+        ? `data:image/jpeg;base64,${row.img_data.toString('base64')}`
+        : null,
+    }));
+
+    res.status(200).json(alumniData);
+  } catch (error) {
+    console.error('Error fetching filtered alumni data:', error);
+    res.status(500).json({ message: 'Server error occurred while fetching alumni data.' });
+  }
+});
+
+
 // Log requests
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
