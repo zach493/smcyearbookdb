@@ -195,10 +195,11 @@ app.get('/api/faculty-department', async (req, res) => {
     if (results.length === 0) {
       return res.status(404).json({ message: 'No faculty found for the given department.' });
     }
+
     const facultyData = results.map((row) => ({
       name: row.name,
       department: row.department,
-      image: row.image ? `data:image/jpeg;base64,${Buffer.from(row.image).toString('base64')}` : null,
+      image: row.image || null,
     }));
 
     res.status(200).json(facultyData);
@@ -207,6 +208,7 @@ app.get('/api/faculty-department', async (req, res) => {
     res.status(500).json({ message: 'Server error occurred while fetching faculty data.' });
   }
 });
+
 
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
