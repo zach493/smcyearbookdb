@@ -172,14 +172,11 @@ app.get('/api/alumnicollege', async (req, res) => {
 });
 
 app.get('/api/faculty-department', async (req, res) => {
-  const { departmentName } = req.query; // Use departmentName instead of departmentKey
+  const { departmentName } = req.query; 
 
   if (!departmentName) {
     return res.status(400).json({ message: 'Department name is required' });
-  }
-
-  try {
-    // Query the smcadmins table to get faculty based on department name
+  }try {
     const query = `
       SELECT 
         name, 
@@ -188,21 +185,17 @@ app.get('/api/faculty-department', async (req, res) => {
       FROM 
         smcadmins
       WHERE 
-        department = ?  // Use the department name directly
+        department = ?  // No comments allowed in SQL
     `;
-    const [results] = await db.query(query, [departmentName]);  // Pass the department name
-
+    const [results] = await db.query(query, [departmentName]);
     if (results.length === 0) {
       return res.status(404).json({ message: 'No faculty found for the given department.' });
     }
-
-    // Return the data in a structured format
     const facultyData = results.map((row) => ({
       name: row.name,
       department: row.department,
       image: row.image ? `data:image/jpeg;base64,${Buffer.from(row.image).toString('base64')}` : null,
     }));
-
     res.status(200).json(facultyData);
   } catch (error) {
     console.error('Error fetching faculty data:', error);
