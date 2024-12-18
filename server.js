@@ -172,20 +172,44 @@ app.get('/api/alumnicollege', async (req, res) => {
 });
 
 
-// Endpoint to fetch data for the top administration and other sections
-app.get('/api/smcadmins', async (req, res) => {
+app.get('/api/faculty-department', async (req, res) => {
+  const { departmentKey } = req.query;
+
+  if (!departmentKey) {
+    return res.status(400).json({ message: 'Department key is required' });
+  }
+
   try {
-    const [results] = await db.query('SELECT name, position, department, image FROM smcadmins');
+    // Query the smcadmins table to get faculty based on department
+    const query = `
+      SELECT 
+        name, 
+        department, 
+        image
+      FROM 
+        smcadmins
+      WHERE 
+        department = ?
+    `;
+    const [results] = await db.query(query, [departmentKey]);
+
     if (results.length === 0) {
-      return res.status(404).json({ message: 'No faculty data found.' });
+      return res.status(404).json({ message: 'No faculty found for the given department.' });
     }
-    res.status(200).json(results);
+
+    // Return the data in a structured format
+    const facultyData = results.map((row) => ({
+      name: row.name,
+      department: row.department,
+      image: row.image ? `data:image/jpeg;base64,${Buffer.from(row.image).toString('base64')}` : null,
+    }));
+
+    res.status(200).json(facultyData);
   } catch (error) {
     console.error('Error fetching faculty data:', error);
-    res.status(500).json({ message: 'Failed to fetch faculty data' });
+    res.status(500).json({ message: 'Server error occurred while fetching faculty data.' });
   }
 });
-
 
 
 app.use((req, res, next) => {
