@@ -65,6 +65,8 @@ app.get('/login', async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 });
+
+
 app.get('/alumniprof', async (req, res) => {
   const alumId = req.query.idNumber; 
   if (!alumId) {
@@ -72,37 +74,37 @@ app.get('/alumniprof', async (req, res) => {
   }
 
   try {
+    // Fetch alumni details
     const [alumRow] = await db.query(
       'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, motto FROM alumni WHERE alum_id_num = ?',
       [alumId]
     );
+
     if (!alumRow || alumRow.length === 0) {
       return res.status(404).json({ message: 'Alumni not found' });
     }
-    res.status(200).json({ message: 'Alumni found', alumni: alumRow[0] });
+
+    // Fetch image URL
+    const [imageRow] = await db.query('SELECT images FROM alumni WHERE alum_id_num = ?', [alumId]);
+
+    if (!imageRow || imageRow.length === 0 || !imageRow[0].images) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+
+    // Return both alumni details and image URL in the response
+    res.status(200).json({
+      message: 'Alumni found',
+      alumni: alumRow[0],
+      img_url: imageRow[0].images, // Include the image URL in the response
+    });
   } catch (error) {
     console.error('Error fetching alumni details:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
-app.get('/images', async (req, res) => {
-  const alumId = req.query.idNumber; 
 
-  if (!alumId) {
-    return res.status(400).json({ message: 'ID Number is required' });
-  } try {
-    const [imageRow] = await db.query('SELECT img_data FROM images WHERE img_ID = ?', [alumId]);
 
-    if (!imageRow || imageRow.length === 0 || !imageRow[0].img_data) {
-      return res.status(404).json({ message: 'Image not found' });
-    }
-    const base64Image = imageRow[0].img_data.toString('base64');
-    res.status(200).json({ img_base64: `data:image/jpeg;base64,${base64Image}` });
-  }catch (error) {
-    console.error('Error fetching image:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+
 
 app.get('/api/yearbook', async (req, res) => {
   try {
@@ -202,8 +204,55 @@ app.get('/api/faculty-department', async (req, res) => {
     res.status(500).json({ message: 'Server error occurred while fetching faculty data.' });
   }
 });
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+app.get('/api/faculty-status', async (req, res) => {
+  const { status } = req.query;
+
+  if (!status) {
+    return res.status(400).json({ message: 'Status parameter is required' });
+  }
+
+  try {
+    const query = `
+      SELECT 
+        name, 
+        department, 
+        image, 
+        status
+      FROM 
+        smcadmins
+      WHERE 
+        status = ?
+    `;
+    
+    const [results] = await db.query(query, [status]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'No faculty found with the given status.' });
+    }
+
+    const facultyData = results.map((row) => ({
+      name: row.name,
+      department: row.department,
+      image: row.image || null,
+      status: row.status,
+    }));
+    res.status(200).json(facultyData);
+  } catch (error) {
+    console.error('Error fetching faculty data:', error);
+    res.status(500).json({ message: 'Server error occurred while fetching faculty data.' });
+  }
+});
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 
+
+///////////////////////////////////////////////DO NOT TOUCH
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
   next();
