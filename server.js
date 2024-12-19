@@ -210,40 +210,23 @@ app.get('/api/faculty-department', async (req, res) => {
 ////////////////////////////////////////////////////////
 app.get('/api/faculty-status', async (req, res) => {
   const { status } = req.query;
-
+  
   if (!status) {
-    return res.status(400).json({ message: 'Status parameter is required' });
+    return res.status(400).json({ message: 'Status is required' });
   }
 
   try {
-    const query = `
-      SELECT 
-        name, 
-        department, 
-        image, 
-        status
-      FROM 
-        smcadmins
-      WHERE 
-        status = ?
-    `;
-    
+    const query = 'SELECT * FROM smcadmins WHERE status = ?';
     const [results] = await db.query(query, [status]);
 
     if (results.length === 0) {
-      return res.status(404).json({ message: 'No faculty found with the given status.' });
+      return res.status(404).json({ message: `No faculty found with status ${status}` });
     }
 
-    const facultyData = results.map((row) => ({
-      name: row.name,
-      department: row.department,
-      image: row.image || null,
-      status: row.status,
-    }));
-    res.status(200).json(facultyData);
-  } catch (error) {
-    console.error('Error fetching faculty data:', error);
-    res.status(500).json({ message: 'Server error occurred while fetching faculty data.' });
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    res.status(500).json({ message: 'Server error occurred while fetching data.' });
   }
 });
 ////////////////////////////////////////////////////////
