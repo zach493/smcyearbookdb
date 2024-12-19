@@ -129,20 +129,15 @@ app.get('/api/alumnicollege', async (req, res) => {
   }
 
   try {
-    // Updated query to join alumni table with images table
     const query = `
       SELECT 
         a.alum_fname, 
         a.alum_mname, 
         a.alum_lname, 
         a.motto, 
-        i.img_data
+        a.images
       FROM 
         alumni AS a
-      LEFT JOIN 
-        images AS i 
-      ON 
-        a.alum_id_num = i.img_id
       WHERE 
         a.alum_course = ? AND a.alum_year = ?
     `;
@@ -153,15 +148,13 @@ app.get('/api/alumnicollege', async (req, res) => {
       return res.status(404).json({ message: 'No alumni found for the given filters.' });
     }
 
-    // Process the results to include base64-encoded image data
+    // Process the results to include the image URL directly from Cloudinary
     const alumniData = results.map((row) => ({
       alum_fname: row.alum_fname,
       alum_mname: row.alum_mname,
       alum_lname: row.alum_lname,
       motto: row.motto,
-      img_data: row.img_data
-        ? `data:image/jpeg;base64,${Buffer.from(row.img_data).toString('base64')}`
-        : null,
+      img_url: row.images, // Directly include the image URL from the 'images' column
     }));
 
     res.status(200).json(alumniData);
@@ -170,6 +163,7 @@ app.get('/api/alumnicollege', async (req, res) => {
     res.status(500).json({ message: 'Server error occurred while fetching alumni data.' });
   }
 });
+
 
 app.get('/api/faculty-department', async (req, res) => {
   const { departmentName } = req.query;
