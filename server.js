@@ -108,13 +108,17 @@ app.get('/alumniprof', async (req, res) => {
 
 app.get('/api/yearbook', async (req, res) => {
   try {
-    const [results] = await db.query('SELECT year, theme, img_data FROM year');
+    // Fetch yearbook data from the database
+    const [results] = await db.query('SELECT year, theme, img_url FROM year');
     if (results.length === 0) {
       return res.status(404).json({ message: 'No yearbook data found.' });
-    }const yearbookData = results.map((row) => ({
+    }
+
+    // Map the results to include Cloudinary URLs
+    const yearbookData = results.map((row) => ({
       year: row.year,
       theme: row.theme,
-      image: row.img_data ? `data:image/jpeg;base64,${row.img_data.toString('base64')}` : null,
+      image: row.img_url || null, // Assume img_url contains the Cloudinary URL
     }));
 
     res.status(200).json(yearbookData);
@@ -123,6 +127,8 @@ app.get('/api/yearbook', async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch yearbook data' });
   }
 });
+
+
 app.get('/api/alumnicollege', async (req, res) => {
   const { course, year } = req.query;
 
