@@ -162,6 +162,7 @@ app.get('/api/alumnicollege', async (req, res) => {
       alum_fname: row.alum_fname,
       alum_mname: row.alum_mname,
       alum_lname: row.alum_lname,
+      alum_course: row.alum_course,
       motto: row.motto,
       img_url: row.images, // Directly include the image URL from the 'images' column
     }));
