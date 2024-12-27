@@ -142,6 +142,7 @@ app.get('/api/alumnicollege', async (req, res) => {
         a.alum_fname, 
         a.alum_mname, 
         a.alum_lname, 
+        a.alum_course,
         a.motto, 
         a.images
       FROM 
