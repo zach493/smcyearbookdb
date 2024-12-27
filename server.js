@@ -147,7 +147,7 @@ app.get('/api/alumnicollege', async (req, res) => {
       FROM 
         alumni AS a
       WHERE 
-        a.alum_course = ? AND a.alum_year = ?
+        a.alum_college = ? AND a.alum_year = ?
     `;
 
     const [results] = await db.query(query, [course, year]);
