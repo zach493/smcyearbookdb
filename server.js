@@ -8,10 +8,10 @@ app.use(cors({ origin: '*' }));
 app.use(bodyParser.json()); 
 
 const db = mysql.createPool({
-  host: 'smcyearbook.cdiagk8o8g4x.ap-southeast-1.rds.amazonaws.com',
-  user: 'root',
-  password: 'nR2Y72jQDfmT5MU',
-  database: 'smcyearbook',
+  host: 'sql12.freesqldatabase.com',
+  user: 'sql12758236',
+  password: '3T9XMFaAxG',
+  database: 'sql12758236',
   port: 3306,
 });
 
@@ -74,7 +74,6 @@ app.get('/alumniprof', async (req, res) => {
   }
 
   try {
-    // Fetch alumni details
     const [alumRow] = await db.query(
       'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, motto FROM alumni WHERE alum_id_num = ?',
       [alumId]
@@ -84,18 +83,16 @@ app.get('/alumniprof', async (req, res) => {
       return res.status(404).json({ message: 'Alumni not found' });
     }
 
-    // Fetch image URL
     const [imageRow] = await db.query('SELECT images FROM alumni WHERE alum_id_num = ?', [alumId]);
 
     if (!imageRow || imageRow.length === 0 || !imageRow[0].images) {
       return res.status(404).json({ message: 'Image not found' });
     }
 
-    // Return both alumni details and image URL in the response
     res.status(200).json({
       message: 'Alumni found',
       alumni: alumRow[0],
-      img_url: imageRow[0].images, // Include the image URL in the response
+      img_url: imageRow[0].images,
     });
   } catch (error) {
     console.error('Error fetching alumni details:', error);
@@ -108,17 +105,14 @@ app.get('/alumniprof', async (req, res) => {
 
 app.get('/api/yearbook', async (req, res) => {
   try {
-    // Fetch yearbook data from the database
     const [results] = await db.query('SELECT year, theme, img_url FROM year');
     if (results.length === 0) {
       return res.status(404).json({ message: 'No yearbook data found.' });
     }
-
-    // Map the results to include Cloudinary URLs
     const yearbookData = results.map((row) => ({
       year: row.year,
       theme: row.theme,
-      image: row.img_url || null, // Assume img_url contains the Cloudinary URL
+      image: row.img_url || null, 
     }));
 
     res.status(200).json(yearbookData);
@@ -157,14 +151,13 @@ app.get('/api/alumnicollege', async (req, res) => {
       return res.status(404).json({ message: 'No alumni found for the given filters.' });
     }
 
-    // Process the results to include the image URL directly from Cloudinary
     const alumniData = results.map((row) => ({
       alum_fname: row.alum_fname,
       alum_mname: row.alum_mname,
       alum_lname: row.alum_lname,
       alum_course: row.alum_course,
       motto: row.motto,
-      img_url: row.images, // Directly include the image URL from the 'images' column
+      img_url: row.images,
     }));
 
     res.status(200).json(alumniData);
