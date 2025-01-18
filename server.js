@@ -155,14 +155,11 @@ app.get('/api/alumnicollege', async (req, res) => {
     const alumniData = await Promise.all(results.map(async (row) => {
       let img_url = row.images;
 
-      if (img_url && img_url.endsWith('.tiff')) {
-        try {
-          const conversionResult = await convertapi.convert('jpg', { File: img_url }, 'tiff');
-          const convertedFiles = await conversionResult.saveFiles('converted/');
-          img_url = convertedFiles[0]; 
-        } catch (error) {
-          console.error('Error converting image:', error);
-        }
+      // Check if the image URL is a TIFF file
+      if (img_url && img_url.endsWith('.tif')) {
+        // Convert the image URL to JPEG format
+        img_url = img_url.replace(/\.tif$/, '.jpg'); // Change the extension to .jpg
+        img_url += '?f=jpg'; // Add transformation parameter to specify format
       }
 
       return {
