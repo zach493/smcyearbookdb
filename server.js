@@ -251,18 +251,12 @@ app.get('/api/faculty-status', async (req, res) => {
 ////////////////////////////////////////////////////////
 
 app.get('/api/ntp', async (req, res) => {
-  const { status } = req.query;
-  
-  if (!status) {
-    return res.status(400).json({ message: 'Status is required' });
-  }
-
   try {
     const query = 'SELECT * FROM ntp';
-    const [results] = await db.query(query, [status]);
+    const [results] = await db.query(query);
 
     if (results.length === 0) {
-      return res.status(404).json({ message: `No faculty found with status ${status}` });
+      return res.status(404).json({ message: 'No faculty found' });
     }
 
     res.status(200).json(results);
