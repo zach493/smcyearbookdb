@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const convertapi = require('convertapi')('secret_U9apsnZRFkG873t4'); // Add your ConvertAPI secret here
 const bodyParser = require('body-parser');
 const app = express();
 
@@ -151,13 +152,27 @@ app.get('/api/alumnicollege', async (req, res) => {
       return res.status(404).json({ message: 'No alumni found for the given filters.' });
     }
 
-    const alumniData = results.map((row) => ({
-      alum_fname: row.alum_fname,
-      alum_mname: row.alum_mname,
-      alum_lname: row.alum_lname,
-      alum_course: row.alum_course,
-      motto: row.motto,
-      img_url: row.images,
+    const alumniData = await Promise.all(results.map(async (row) => {
+      let img_url = row.images;
+
+      if (img_url && img_url.endsWith('.tiff')) {
+        try {
+          const conversionResult = await convertapi.convert('jpg', { File: img_url }, 'tiff');
+          const convertedFiles = await conversionResult.saveFiles('converted/');
+          img_url = convertedFiles[0]; 
+        } catch (error) {
+          console.error('Error converting image:', error);
+        }
+      }
+
+      return {
+        alum_fname: row.alum_fname,
+        alum_mname: row.alum_mname,
+        alum_lname: row.alum_lname,
+        alum_course: row.alum_course,
+        motto: row.motto,
+        img_url: img_url,
+      };
     }));
 
     res.status(200).json(alumniData);
@@ -166,6 +181,7 @@ app.get('/api/alumnicollege', async (req, res) => {
     res.status(500).json({ message: 'Server error occurred while fetching alumni data.' });
   }
 });
+
 
 
 app.get('/api/faculty-department', async (req, res) => {
