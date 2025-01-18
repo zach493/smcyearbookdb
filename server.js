@@ -67,7 +67,6 @@ app.get('/login', async (req, res) => {
   }
 });
 
-
 app.get('/alumniprof', async (req, res) => {
   const alumId = req.query.idNumber; 
   if (!alumId) {
@@ -90,10 +89,17 @@ app.get('/alumniprof', async (req, res) => {
       return res.status(404).json({ message: 'Image not found' });
     }
 
+    let img_url = imageRow[0].images;
+
+    if (img_url && img_url.endsWith('.tif')) {
+      img_url = img_url.replace(/\.tif$/, '.jpg'); 
+      img_url += '?f=jpg';
+    }
+
     res.status(200).json({
       message: 'Alumni found',
       alumni: alumRow[0],
-      img_url: imageRow[0].images,
+      img_url: img_url,
     });
   } catch (error) {
     console.error('Error fetching alumni details:', error);
@@ -155,11 +161,9 @@ app.get('/api/alumnicollege', async (req, res) => {
     const alumniData = await Promise.all(results.map(async (row) => {
       let img_url = row.images;
 
-      // Check if the image URL is a TIFF file
       if (img_url && img_url.endsWith('.tif')) {
-        // Convert the image URL to JPEG format
-        img_url = img_url.replace(/\.tif$/, '.jpg'); // Change the extension to .jpg
-        img_url += '?f=jpg'; // Add transformation parameter to specify format
+        img_url = img_url.replace(/\.tif$/, '.jpg');
+        img_url += '?f=jpg'; 
       }
 
       return {
@@ -246,9 +250,6 @@ app.get('/api/faculty-status', async (req, res) => {
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
-
-
-
 ///////////////////////////////////////////////DO NOT TOUCH
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
