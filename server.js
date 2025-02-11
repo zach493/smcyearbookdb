@@ -3,18 +3,22 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 const convertapi = require('convertapi')('secret_U9apsnZRFkG873t4'); // Add your ConvertAPI secret here
 const bodyParser = require('body-parser');
+const fs = require('fs');
 const app = express();
 
 app.use(cors({ origin: '*' })); 
 app.use(bodyParser.json()); 
 
+require('dotenv').config();
 const db = mysql.createPool({
-  host: 'sql12.freesqldatabase.com',
-  user: 'sql12758236',
-  password: '3T9XMFaAxG',
-  database: 'sql12758236',
-  port: 3306,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  ssl: { rejectUnauthorized: true }
 });
+
 
 app.get('/api/vision-mission', async (req, res) => {
   try {
