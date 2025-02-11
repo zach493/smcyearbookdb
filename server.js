@@ -19,7 +19,7 @@ const db = mysql.createPool({
   port: 17784,
   ssl: {
     ca: Buffer.from(process.env.MYSQL_CA_CERT, 'base64').toString('utf-8'), // Decode CA certificate
-    rejectUnauthorized: true
+    rejectUnauthorized: false
   }
 });
 
