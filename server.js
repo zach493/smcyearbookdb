@@ -10,15 +10,18 @@ app.use(cors({ origin: '*' }));
 app.use(bodyParser.json()); 
 
 require('dotenv').config();
-const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
-  ssl: { rejectUnauthorized: true }
-});
 
+const db = mysql.createPool({
+  host: 'yearbook-zaxer147-7f4c.c.aivencloud.com',
+  user: 'avnadmin',
+  password: process.env.MYSQL_PASSWORD,  // Store your password in Railway's environment variables
+  database: 'defaultdb',
+  port: 17784,
+  ssl: {
+    ca: Buffer.from(process.env.MYSQL_CA_CERT, 'base64').toString('utf-8'), // Decode CA certificate
+    rejectUnauthorized: true
+  }
+});
 
 app.get('/api/vision-mission', async (req, res) => {
   try {
