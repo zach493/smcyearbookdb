@@ -152,10 +152,10 @@ app.get('/api/alumnicollege', async (req, res) => {
         a.alum_lname, 
         a.alum_course,
         a.motto, 
-        a.images
-        a.images_uni
-        a.images_corp
-        a.status
+        a.images,
+        a.images_uni,
+        a.images_corp,
+        a.status,
         a.enc_key
       FROM 
         alumni AS a
