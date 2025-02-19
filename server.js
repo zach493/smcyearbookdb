@@ -14,7 +14,7 @@ require('dotenv').config();
 const db = mysql.createPool({
   host: 'yearbook-zaxer147-7f4c.c.aivencloud.com',
   user: 'avnadmin',
-  password: process.env.MYSQL_PASSWORD,  // Store your password in Railway's environment variables
+  password: process.env.MYSQL_PASSWORD, 
   database: 'defaultdb',
   port: 17784,
   ssl: {
@@ -153,6 +153,10 @@ app.get('/api/alumnicollege', async (req, res) => {
         a.alum_course,
         a.motto, 
         a.images
+        a.images_uni
+        a.images_corp
+        a.status
+        a.enc_key
       FROM 
         alumni AS a
       WHERE 
@@ -167,10 +171,20 @@ app.get('/api/alumnicollege', async (req, res) => {
 
     const alumniData = await Promise.all(results.map(async (row) => {
       let img_url = row.images;
+      let img_url1 = row.images_uni;
+      let img_url2 = row.images_corp;
 
       if (img_url && img_url.endsWith('.tif')) {
         img_url = img_url.replace(/\.tif$/, '.jpg');
         img_url += '?f=jpg'; 
+      }
+      if (img_url1 && img_url1.endsWith('.tif')) {
+        img_url1 = img_url1.replace(/\.tif$/, '.jpg');
+        img_url1 += '?f=jpg'; 
+      }
+      if (img_url2 && img_url2.endsWith('.tif')) {
+        img_url2 = img_url2.replace(/\.tif$/, '.jpg');
+        img_url2 += '?f=jpg'; 
       }
 
       return {
@@ -180,6 +194,9 @@ app.get('/api/alumnicollege', async (req, res) => {
         alum_course: row.alum_course,
         motto: row.motto,
         img_url: img_url,
+        img_url1: img_url1,
+        img_url2: img_url2,
+
       };
     }));
 
