@@ -83,7 +83,7 @@ app.get('/alumniprof', async (req, res) => {
   try {
     // Fetch alumni details
     const [alumRow] = await db.query(
-      'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, motto FROM alumni WHERE alum_id_num = ?',
+      'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, motto, status,status_uni,status_corp,enc_key FROM alumni WHERE alum_id_num = ?',
       [alumId]
     );
 
