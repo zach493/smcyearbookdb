@@ -74,6 +74,8 @@ app.get('/login', async (req, res) => {
   }
 });
 
+
+
 app.get('/alumniprof', async (req, res) => {
   const alumId = req.query.idNumber; 
   if (!alumId) {
@@ -83,7 +85,7 @@ app.get('/alumniprof', async (req, res) => {
   try {
     // Fetch alumni details
     const [alumRow] = await db.query(
-      'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, motto, status,status_uni,status_corp,enc_key FROM alumni WHERE alum_id_num = ?',
+      'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, motto, status, status_uni, status_corp, enc_key FROM alumni WHERE alum_id_num = ?',
       [alumId]
     );
 
@@ -124,6 +126,9 @@ app.get('/alumniprof', async (req, res) => {
       img_url: img_url,
       img_url1: img_url1,
       img_url2: img_url2,
+      status: alumRow[0].status, // Include status for the first image
+      status_uni: alumRow[0].status_uni, // Include status for the second image
+      status_corp: alumRow[0].status_corp, 
     });
   } catch (error) {
     console.error('Error fetching alumni details:', error);
