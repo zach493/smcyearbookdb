@@ -81,6 +81,7 @@ app.get('/alumniprof', async (req, res) => {
   }
 
   try {
+    // Fetch alumni details
     const [alumRow] = await db.query(
       'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, motto FROM alumni WHERE alum_id_num = ?',
       [alumId]
@@ -90,23 +91,39 @@ app.get('/alumniprof', async (req, res) => {
       return res.status(404).json({ message: 'Alumni not found' });
     }
 
-    const [imageRow] = await db.query('SELECT images FROM alumni WHERE alum_id_num = ?', [alumId]);
+    // Fetch images
+    const [imageRow] = await db.query('SELECT images, images_uni, images_corp FROM alumni WHERE alum_id_num = ?', [alumId]);
 
-    if (!imageRow || imageRow.length === 0 || !imageRow[0].images) {
-      return res.status(404).json({ message: 'Image not found' });
+    if (!imageRow || imageRow.length === 0) {
+      return res.status(404).json({ message: 'Images not found' });
     }
 
     let img_url = imageRow[0].images;
+    let img_url1 = imageRow[0].images_uni;
+    let img_url2 = imageRow[0].images_corp;
 
+    // Convert .tif to .jpg if necessary
     if (img_url && img_url.endsWith('.tif')) {
       img_url = img_url.replace(/\.tif$/, '.jpg'); 
       img_url += '?f=jpg';
+    }
+
+    if (img_url1 && img_url1.endsWith('.tif')) {
+      img_url1 = img_url1.replace(/\.tif$/, '.jpg'); 
+      img_url1 += '?f=jpg';
+    }
+
+    if (img_url2 && img_url2.endsWith('.tif')) {
+      img_url2 = img_url2.replace(/\.tif$/, '.jpg'); 
+      img_url2 += '?f=jpg';
     }
 
     res.status(200).json({
       message: 'Alumni found',
       alumni: alumRow[0],
       img_url: img_url,
+      img_url1: img_url1,
+      img_url2: img_url2,
     });
   } catch (error) {
     console.error('Error fetching alumni details:', error);
