@@ -131,6 +131,8 @@ app.get('/alumniprof', async (req, res) => {
   }
 });
 
+
+
 app.post('/updateImageStatus', async (req, res) => {
   const { alumId, imageKey, status } = req.body;
 
