@@ -131,6 +131,42 @@ app.get('/alumniprof', async (req, res) => {
   }
 });
 
+app.post('/updateImageStatus', async (req, res) => {
+  const { alumId, imageKey, status } = req.body;
+
+  if (!alumId || !imageKey || !status) {
+    return res.status(400).json({ message: 'Alumni ID, image key, and status are required' });
+  }
+
+  try {
+    // Determine which status column to update based on the imageKey
+    let statusColumn;
+    if (imageKey === 'status') {
+      statusColumn = 'status';
+    } else if (imageKey === 'status_uni') {
+      statusColumn = 'status_uni';
+    } else if (imageKey === 'status_corp') {
+      statusColumn = 'status_corp';
+    } else {
+      return res.status(400).json({ message: 'Invalid image key' });
+    }
+
+    // Update the status in the database
+    const result = await db.query(
+      `UPDATE alumni SET ${statusColumn} = ? WHERE alum_id_num = ?`,
+      [status, alumId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Alumni not found or status not updated' });
+    }
+
+    res.status(200).json({ message: 'Image status updated successfully' });
+  } catch (error) {
+    console.error('Error updating image status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 
