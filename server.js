@@ -196,7 +196,6 @@ app.get('/api/yearbook', async (req, res) => {
   }
 });
 
-
 app.get('/api/alumnicollege', async (req, res) => {
   const { course, year } = req.query;
 
@@ -216,6 +215,8 @@ app.get('/api/alumnicollege', async (req, res) => {
         a.images_uni,
         a.images_corp,
         a.status,
+        a.status_uni,
+        a.status_corp,
         a.enc_key
       FROM 
         alumni AS a
@@ -256,7 +257,10 @@ app.get('/api/alumnicollege', async (req, res) => {
         img_url: img_url,
         img_url1: img_url1,
         img_url2: img_url2,
-
+        status: row.status,
+        status_uni: row.status_uni,
+        status_corp: row.status_corp,
+        enc_key: row.enc_key,
       };
     }));
 
@@ -266,8 +270,6 @@ app.get('/api/alumnicollege', async (req, res) => {
     res.status(500).json({ message: 'Server error occurred while fetching alumni data.' });
   }
 });
-
-
 
 app.get('/api/faculty-department', async (req, res) => {
   const { departmentName } = req.query;
