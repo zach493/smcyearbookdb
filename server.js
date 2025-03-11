@@ -52,14 +52,17 @@ app.get('/alumni', async (req, res) => {
     return res.status(500).send('Server error');
   }
 });
-app.get('/login', async (req, res) => {
-  const idNumber = req.query.idNumber; 
 
-  if (!idNumber) {
-    return res.status(400).json({ message: 'ID Number is required' });
+
+app.get('/login', async (req, res) => {
+  const idNumber = req.query.idNumber;
+  const password = req.query.password;
+
+  if (!idNumber || !password) {
+    return res.status(400).json({ message: 'ID Number and password are required' });
   }
 
-  const query = 'SELECT * FROM alumni WHERE alum_id_num = ?';
+  const query = 'SELECT alum_id_num, password FROM alumni WHERE alum_id_num = ?';
   try {
     const [results] = await db.query(query, [idNumber]);
 
@@ -67,12 +70,27 @@ app.get('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid ID Number' });
     }
 
-    res.status(200).json({ message: 'Login successful', user: results[0] });
+    // Split stored password into hash and salt
+    const [storedHash, salt] = results[0].password.split(':');
+    
+    // Generate hash with provided password and stored salt
+    const providedHash = Buffer.from(
+      require('crypto').createHash('sha256').update(idNumber + salt).digest()
+    ).toString('base64');
+
+    // Compare hashes
+    if (providedHash === storedHash) {
+      // Fetch full user data if password matches
+      const [userData] = await db.query('SELECT * FROM alumni WHERE alum_id_num = ?', [idNumber]);
+      res.status(200).json({ message: 'Login successful', user: userData[0] });
+    } else {
+      res.status(400).json({ message: 'Invalid password' });
+    }
   } catch (err) {
-    console.error('Error fetching user:', err);
+    console.error('Error during login:', err);
     return res.status(500).json({ message: 'Server error' });
   }
-});
+}); 
 
 
 
