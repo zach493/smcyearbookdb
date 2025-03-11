@@ -1,7 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
-const convertapi = require('convertapi')('secret_U9apsnZRFkG873t4'); // Add your ConvertAPI secret here
+const convertapi = require('convertapi')('secret_U9apsnZRFkG873t4');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const app = express();
@@ -18,7 +18,7 @@ const db = mysql.createPool({
   database: 'defaultdb',
   port: 17784,
   ssl: {
-    ca: Buffer.from(process.env.MYSQL_CA_CERT, 'base64').toString('utf-8'), // Decode CA certificate
+    ca: Buffer.from(process.env.MYSQL_CA_CERT, 'base64').toString('utf-8'), 
     rejectUnauthorized: false
   }
 });
@@ -69,18 +69,12 @@ app.get('/login', async (req, res) => {
     if (results.length === 0) {
       return res.status(400).json({ message: 'Invalid ID Number' });
     }
-
-    // Split stored password into hash and salt
     const [storedHash, salt] = results[0].password.split(':');
-    
-    // Generate hash with provided password and stored salt
     const providedHash = Buffer.from(
       require('crypto').createHash('sha256').update(idNumber + salt).digest()
     ).toString('base64');
 
-    // Compare hashes
     if (providedHash === storedHash) {
-      // Fetch full user data if password matches
       const [userData] = await db.query('SELECT * FROM alumni WHERE alum_id_num = ?', [idNumber]);
       res.status(200).json({ message: 'Login successful', user: userData[0] });
     } else {
@@ -101,7 +95,6 @@ app.get('/alumniprof', async (req, res) => {
   }
 
   try {
-    // Fetch alumni details
     const [alumRow] = await db.query(
       'SELECT alum_fname, alum_mname, alum_lname, alum_id_num, alum_year, alum_course, motto, status, status_uni, status_corp, enc_key FROM alumni WHERE alum_id_num = ?',
       [alumId]
@@ -111,7 +104,6 @@ app.get('/alumniprof', async (req, res) => {
       return res.status(404).json({ message: 'Alumni not found' });
     }
 
-    // Fetch images
     const [imageRow] = await db.query('SELECT images, images_uni, images_corp FROM alumni WHERE alum_id_num = ?', [alumId]);
 
     if (!imageRow || imageRow.length === 0) {
@@ -122,7 +114,6 @@ app.get('/alumniprof', async (req, res) => {
     let img_url1 = imageRow[0].images_uni;
     let img_url2 = imageRow[0].images_corp;
 
-    // Convert .tif to .jpg if necessary
     if (img_url && img_url.endsWith('.tif')) {
       img_url = img_url.replace(/\.tif$/, '.jpg'); 
       img_url += '?f=jpg';
@@ -144,8 +135,8 @@ app.get('/alumniprof', async (req, res) => {
       img_url: img_url,
       img_url1: img_url1,
       img_url2: img_url2,
-      status: alumRow[0].status, // Include status for the first image
-      status_uni: alumRow[0].status_uni, // Include status for the second image
+      status: alumRow[0].status, 
+      status_uni: alumRow[0].status_uni, 
       status_corp: alumRow[0].status_corp, 
     });
   } catch (error) {
@@ -164,7 +155,6 @@ app.post('/updateImageStatus', async (req, res) => {
   }
 
   try {
-    // Determine which status column to update based on the imageKey
     let statusColumn;
     if (imageKey === 'status') {
       statusColumn = 'status';
@@ -176,7 +166,6 @@ app.post('/updateImageStatus', async (req, res) => {
       return res.status(400).json({ message: 'Invalid image key' });
     }
 
-    // Update the status in the database
     const result = await db.query(
       `UPDATE alumni SET ${statusColumn} = ? WHERE alum_id_num = ?`,
       [status, alumId]
@@ -326,10 +315,7 @@ app.get('/api/faculty-department', async (req, res) => {
     res.status(500).json({ message: 'Server error occurred while fetching faculty data.' });
   }
 });
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
+
 app.get('/api/faculty-status', async (req, res) => {
   const { status } = req.query;
   
@@ -351,8 +337,7 @@ app.get('/api/faculty-status', async (req, res) => {
     res.status(500).json({ message: 'Server error occurred while fetching data.' });
   }
 });
-////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////
+
 
 app.get('/api/ntp', async (req, res) => {
   try {
@@ -369,8 +354,7 @@ app.get('/api/ntp', async (req, res) => {
     res.status(500).json({ message: 'Server error occurred while fetching data.' });
   }
 });
-////////////////////////////////////////////////////////
-///////////////////////////////////////////////DO NOT TOUCH
+
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
   next();
