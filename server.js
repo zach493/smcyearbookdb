@@ -69,12 +69,16 @@ app.get('/login', async (req, res) => {
     if (results.length === 0) {
       return res.status(400).json({ message: 'Invalid ID Number' });
     }
+
     const [storedHash, salt] = results[0].password.split(':');
+    
     const providedHash = Buffer.from(
-      require('crypto').createHash('sha256').update(idNumber + salt).digest()
+      require('crypto').createHash('sha256').update(password + salt).digest()
     ).toString('base64');
 
+
     if (providedHash === storedHash) {
+  
       const [userData] = await db.query('SELECT * FROM alumni WHERE alum_id_num = ?', [idNumber]);
       res.status(200).json({ message: 'Login successful', user: userData[0] });
     } else {
