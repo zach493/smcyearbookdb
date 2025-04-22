@@ -23,6 +23,12 @@ const db = mysql.createPool({
   }
 });
 
+
+app.use((req, res, next) => {
+  console.log(`${req.method} request to ${req.url}`);
+  next();
+});
+
 // LOGIN endpoint
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
@@ -137,10 +143,7 @@ app.put('/booked-products/:id', async (req, res) => {
   }
 });
 
-app.use((req, res, next) => {
-  console.log(`${req.method} request to ${req.url}`);
-  next();
-});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
