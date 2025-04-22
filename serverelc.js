@@ -44,12 +44,26 @@ app.post('/api/auth/signup', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const checkUser = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (checkUser[0].length > 0) {
+    // Wrapping db.query in a Promise to work with async/await
+    const checkUser = await new Promise((resolve, reject) => {
+      db.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    });
+
+    if (checkUser.length > 0) {
       return res.status(400).json({ message: 'Username already taken' });
     }
 
-    await db.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, password]);
+    // Insert new user
+    await new Promise((resolve, reject) => {
+      db.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, password], (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    });
+
     return res.status(201).json({ message: 'Signup successful' });
 
   } catch (error) {
@@ -57,6 +71,7 @@ app.post('/api/auth/signup', async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 
 app.post('/approve-booking', async (req, res) => {
