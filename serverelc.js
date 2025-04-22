@@ -118,11 +118,11 @@ app.delete('/booked-products/:id', (req, res) => {
 // Update booking
 app.put('/booked-products/:id', (req, res) => {
   const { id } = req.params;
-  const { address, cellphone, payment, date } = req.body;
+  const { name, address, cellphone, payment, date } = req.body;
 
   db.query(
-    'UPDATE elc_booked SET address = ?, cellphone = ?, payment = ?, date = ? WHERE id = ?',
-    [address, cellphone, payment, date, id],
+    'UPDATE elc_booked SET name = ?, address = ?, cellphone = ?, payment = ?, date = ? WHERE id = ?',
+    [name, address, cellphone, payment, date, id],
     (err) => {
       if (err) {
         console.error('Error updating booking:', err);
