@@ -52,7 +52,7 @@ app.post('/api/auth/signup', async (req, res) => {
   try {
     // Wrapping db.query in a Promise to work with async/await
     const checkUser = await new Promise((resolve, reject) => {
-      db.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
+      db.query('SELECT * FROM elc_db WHERE username = ?', [username], (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });
@@ -64,7 +64,7 @@ app.post('/api/auth/signup', async (req, res) => {
 
     // Insert new user
     await new Promise((resolve, reject) => {
-      db.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, password], (err, results) => {
+      db.query('INSERT INTO elc_db (username, password) VALUES (?, ?)', [username, password], (err, results) => {
         if (err) reject(err);
         else resolve(results);
       });
