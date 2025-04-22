@@ -23,56 +23,39 @@ const db = mysql.createPool({
   }
 });
 
-
-
-
 // LOGIN endpoint
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
-
   const sql = 'SELECT * FROM elc_db WHERE username = ? AND password = ?';
+
   db.query(sql, [username, password], (err, results) => {
     if (err) return res.status(500).json({ message: 'Database error' });
 
     if (results.length > 0) {
-      return res.status(200).json({ message: 'Login successful' });
+      res.status(200).json({ message: 'Login successful' });
     } else {
-      return res.status(401).json({ message: 'Invalid username or password' });
+      res.status(401).json({ message: 'Invalid username or password' });
     }
   });
 });
 
 // SIGNUP endpoint
-app.post('/api/auth/signup', async (req, res) => {
+app.post('/api/auth/signup', (req, res) => {
   const { username, password } = req.body;
 
-  try {
-    // Wrapping db.query in a Promise to work with async/await
-    const checkUser = await new Promise((resolve, reject) => {
-      db.query('SELECT * FROM elc_db WHERE username = ?', [username], (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
-    });
+  db.query('SELECT * FROM elc_db WHERE username = ?', [username], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
 
-    if (checkUser.length > 0) {
+    if (results.length > 0) {
       return res.status(400).json({ message: 'Username already taken' });
     }
 
-    // Insert new user
-    await new Promise((resolve, reject) => {
-      db.query('INSERT INTO elc_db (username, password) VALUES (?, ?)', [username, password], (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
+    db.query('INSERT INTO elc_db (username, password) VALUES (?, ?)', [username, password], (err2, insertResult) => {
+      if (err2) return res.status(500).json({ message: 'Database error during signup' });
+
+      res.status(201).json({ message: 'Signup successful' });
     });
-
-    return res.status(201).json({ message: 'Signup successful' });
-
-  } catch (error) {
-    console.error('Signup error:', error);
-    return res.status(500).json({ message: 'Server error' });
-  }
+  });
 });
 
 
