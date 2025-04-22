@@ -40,7 +40,7 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // SIGNUP endpoint
-app.post('/signup', async (req, res) => {
+app.post('/api/auth/signup', async (req, res) => {
   const { username, password } = req.body;
 
   try {
