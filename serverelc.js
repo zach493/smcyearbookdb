@@ -5,11 +5,17 @@ const convertapi = require('convertapi')('secret_U9apsnZRFkG873t4');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const app = express();
+const mysqlCACert = process.env.MYSQL_CA_CERT;
 
 app.use(cors({ origin: '*' })); 
 app.use(bodyParser.json()); 
 
 require('dotenv').config();
+
+if (!mysqlCACert) {
+  console.error('MYSQL_CA_CERT environment variable is missing!');
+  process.exit(1);  // Exit the process if the cert is missing
+}
 
 const db = mysql.createPool({
   host: 'yearbook-zaxer147-7f4c.c.aivencloud.com',
@@ -22,6 +28,8 @@ const db = mysql.createPool({
     rejectUnauthorized: false
   }
 });
+
+
 
 app.get('/api/vision-mission', async (req, res) => {
   try {
