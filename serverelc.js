@@ -62,6 +62,11 @@ app.post('/api/auth/signup', (req, res) => {
 app.post('/approve-booking', (req, res) => {
   const { name, price, address, cellphone, payment, date, product, user } = req.body;
 
+  // Ensure correct date format for MySQL (YYYY-MM-DD)
+  const formattedDate = new Date(date);
+  const mysqlDate = `${formattedDate.getFullYear()}-${String(formattedDate.getMonth() + 1).padStart(2, '0')}-${String(formattedDate.getDate()).padStart(2, '0')}`;
+
+  // Check if any required field is missing
   if (!name || !price || !address || !cellphone || !payment || !date || !product || !user) {
     return res.status(400).json({ message: 'All fields are required.' });
   }
@@ -71,11 +76,15 @@ app.post('/approve-booking', (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.query(query, [name, price, address, cellphone, payment, date, product, user], (err) => {
+  // Use mysqlDate instead of the raw ISO string
+  const values = [name, price, address, cellphone, payment, mysqlDate, product, user];
+
+  db.query(query, values, (err) => {
     if (err) {
       console.error('Error inserting booking:', err);
       return res.status(500).json({ message: 'Internal server error.' });
     }
+
     res.status(200).json({ message: 'Booking approved and saved.' });
   });
 });
