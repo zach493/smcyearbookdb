@@ -1,24 +1,24 @@
 const express = require('express');
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2');
 const cors = require('cors');
 const convertapi = require('convertapi')('secret_U9apsnZRFkG873t4');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const app = express();
 
-app.use(cors({ origin: '*' })); 
-app.use(bodyParser.json()); 
+app.use(cors({ origin: '*' }));
+app.use(bodyParser.json());
 
 require('dotenv').config();
 
 const db = mysql.createPool({
   host: 'yearbook-zaxer147-7f4c.c.aivencloud.com',
   user: 'avnadmin',
-  password: process.env.MYSQL_PASSWORD, 
+  password: process.env.MYSQL_PASSWORD,
   database: 'defaultdb',
   port: 17784,
   ssl: {
-    ca: Buffer.from(process.env.MYSQL_CA_CERT, 'base64').toString('utf-8'), 
+    ca: Buffer.from(process.env.MYSQL_CA_CERT, 'base64').toString('utf-8'),
     rejectUnauthorized: false
   }
 });
@@ -50,79 +50,81 @@ app.post('/api/auth/signup', (req, res) => {
       return res.status(400).json({ message: 'Username already taken' });
     }
 
-    db.query('INSERT INTO elc_db (username, password) VALUES (?, ?)', [username, password], (err2, insertResult) => {
-      if (err2) return res.status(500).json({ message: 'Database error during signup' });
+    db.query('INSERT INTO elc_db (username, password) VALUES (?, ?)', [username, password], (err2) => {
+      if (err2) return res.status(500).json({ message: 'Error creating user' });
 
       res.status(201).json({ message: 'Signup successful' });
     });
   });
 });
 
-
-
-app.post('/approve-booking', async (req, res) => {
+// Approve booking
+app.post('/approve-booking', (req, res) => {
   const { name, price, address, cellphone, payment, date, product, user } = req.body;
 
   if (!name || !price || !address || !cellphone || !payment || !date || !product || !user) {
     return res.status(400).json({ message: 'All fields are required.' });
   }
 
-  try {
-    const query = `
-      INSERT INTO elc_booked (name, price, address, cellphone, payment, date, product, user)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    await db.query(query, [name, price, address, cellphone, payment, date, product, user]);
+  const query = `
+    INSERT INTO elc_booked (name, price, address, cellphone, payment, date, product, user)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(query, [name, price, address, cellphone, payment, date, product, user], (err) => {
+    if (err) {
+      console.error('Error inserting booking:', err);
+      return res.status(500).json({ message: 'Internal server error.' });
+    }
     res.status(200).json({ message: 'Booking approved and saved.' });
-  } catch (error) {
-    console.error('Error inserting booking:', error);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
+  });
 });
 
-// GET bookings by username
-app.get('/booked-products/:username', async (req, res) => {
+// Get bookings by username
+app.get('/booked-products/:username', (req, res) => {
   const { username } = req.params;
-  try {
-    const [results] = await db.query(
-      'SELECT * FROM elc_booked WHERE user = ? ORDER BY id DESC',
-      [username]
-    );
+
+  db.query('SELECT * FROM elc_booked WHERE user = ? ORDER BY id DESC', [username], (err, results) => {
+    if (err) {
+      console.error('Error fetching bookings:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
     res.json(results);
-  } catch (error) {
-    console.error('Error fetching booked products:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
+  });
 });
 
-// DELETE booking
-app.delete('/booked-products/:id', async (req, res) => {
+// Delete booking
+app.delete('/booked-products/:id', (req, res) => {
   const { id } = req.params;
-  try {
-    const [result] = await db.query('DELETE FROM elc_booked WHERE id = ?', [id]);
+
+  db.query('DELETE FROM elc_booked WHERE id = ?', [id], (err) => {
+    if (err) {
+      console.error('Error deleting booking:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
     res.json({ message: 'Booking deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting booking:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
+  });
 });
 
-// PUT (update) booking
-app.put('/booked-products/:id', async (req, res) => {
+// Update booking
+app.put('/booked-products/:id', (req, res) => {
   const { id } = req.params;
   const { address, cellphone, payment, date } = req.body;
-  try {
-    await db.query(
-      'UPDATE elc_booked SET address = ?, cellphone = ?, payment = ?, date = ? WHERE id = ?',
-      [address, cellphone, payment, date, id]
-    );
-    res.json({ message: 'Booking updated successfully' });
-  } catch (error) {
-    console.error('Error updating booking:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
+
+  db.query(
+    'UPDATE elc_booked SET address = ?, cellphone = ?, payment = ?, date = ? WHERE id = ?',
+    [address, cellphone, payment, date, id],
+    (err) => {
+      if (err) {
+        console.error('Error updating booking:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+      res.json({ message: 'Booking updated successfully' });
+    }
+  );
 });
 
+// Log incoming requests
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
   next();
